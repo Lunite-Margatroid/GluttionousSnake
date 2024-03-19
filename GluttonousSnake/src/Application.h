@@ -1,11 +1,14 @@
 #pragma once
-class Appliaction
+
+class Application
 {
 	GLFWwindow* m_Window;
 	bool m_Run;
-	Appliaction();
-	~Appliaction();
+	bool m_DemoWindow;
+	Application();
+	~Application();
 	void Init();
 	void Run();
 	void AppEnd();
+	void RenderImGui();
 };

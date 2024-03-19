@@ -1,12 +1,8 @@
 #pragma once
-#include "pch.h"
 
 namespace init
 {
-	GLFWwindow* InitGL();
-
-
-
+	void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 	GLFWwindow* InitGL()
 	{
 		// ≥ı ºªØglfw
