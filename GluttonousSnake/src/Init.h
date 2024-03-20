@@ -15,7 +15,7 @@ namespace init
 		// glfwWindowHint(GLFW_SAMPLES, 4);
 
 		// ³õÊ¼»¯´°¿Ú
-		GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGL-Learn", NULL, NULL);
+		GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "GluttonousSnake", NULL, NULL);
 		if (window == NULL)
 		{
 			std::cout << "Fail to create a window" << std::endl;

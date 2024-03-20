@@ -1,14 +1,21 @@
 #pragma once
 
-class Application
+namespace demo_alpha
 {
-	GLFWwindow* m_Window;
-	bool m_Run;
-	bool m_DemoWindow;
-	Application();
-	~Application();
-	void Init();
-	void Run();
-	void AppEnd();
-	void RenderImGui();
-};
+
+	class Application
+	{
+		GLFWwindow* m_Window;
+		bool m_Run;
+		bool m_DemoWindow;
+
+		void Init();
+		void AppEnd();
+		void RenderImGui();
+		void Render();
+	public:
+		Application();
+		~Application();
+		void Run();
+	};
+}
