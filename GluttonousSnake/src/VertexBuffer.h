@@ -12,7 +12,7 @@ namespace LM
 		VertexBuffer();
 		virtual ~VertexBuffer();
 
-		virtual void Init(unsigned int size, void* data);
+		virtual void Init(unsigned int size, const void* data);
 
 		void Bind() const;
 		void Unbind() const;
