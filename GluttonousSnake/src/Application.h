@@ -1,6 +1,6 @@
 #pragma once
 
-namespace demo_alpha
+namespace GS
 {
 
 	class Application

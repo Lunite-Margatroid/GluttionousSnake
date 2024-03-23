@@ -2,7 +2,7 @@
 #include "Application.h"
 #include "Init.h"
 
-namespace demo_alpha
+namespace GS
 {
 
     Application::Application() :m_Run(true), m_DemoWindow(true)
