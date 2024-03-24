@@ -11,7 +11,7 @@ namespace GS
 		VertexBuffer(unsigned int size, const void* data = NULL);
 		~VertexBuffer();
 		void Init(unsigned int size, const void* data = NULL) override;
-		bool AddData(unsigned int offset, unsigned int size, const void* data);
+		bool AddData( unsigned int size, const void* data);
 		void ClearData();
 		bool IsDataFull();
 	};

@@ -1,11 +1,15 @@
 #pragma once
 #include "VBO.h"
+#include "Shader.h"
 namespace GS
 {
 	class Renderer
 	{
 		VertexBuffer m_vbo;
 		unsigned int m_VerCount;
+		unsigned int m_vao;
+
+		LM::Shader m_Shader;
 
 		void Draw();
 	public:

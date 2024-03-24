@@ -95,12 +95,6 @@ namespace LM
 		GLCall(glUniformMatrix3fv(GetUniformLocation(valueName), 1, transpose, value));
 	}
 
-	void Shader::SetUniformTexture(const std::string& valueName,Texture& texture)
-	{
-		texture.Bind();		// 在OpenGL006加入这行代码		绘制不同模型之前先绑定纹理
-		this->SetUniform1i(valueName, texture.GetIndex());
-	}
-
 	void Shader::SetUniformTexture(const std::string& valueName, unsigned char textureIndex)
 	{
 		this->SetUniform1i(valueName, textureIndex);

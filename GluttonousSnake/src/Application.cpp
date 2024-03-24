@@ -8,10 +8,12 @@ namespace GS
     Application::Application() :m_Run(true), m_DemoWindow(true)
     {
         Init();
+        m_Renderer = new Renderer();
     }
 
     Application::~Application()
     {
+        delete m_Renderer;
         AppEnd();
     }
 
@@ -40,11 +42,9 @@ namespace GS
     {
         while (m_Run)
         {
+            m_Run = (glfwWindowShouldClose(m_Window) == 0);
             glfwPollEvents();
             Render();
-
-
-            m_Run = !glfwWindowShouldClose(m_Window);
         }
     }
 
@@ -74,6 +74,16 @@ namespace GS
     void Application::Render()
     {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        m_Renderer->DrawBegin();
+        glViewport(0, 0, 900, 900);
+        for(int i=0;i<30;i++)
+            for (int j = 0; j < 30; j++)
+            {
+                m_Renderer->DrawRect(glm::vec2(i, j), glm::vec4( float(i) / 30.f , float(j) / 30.0f, 0.5f, 1.0f));
+            }
+        m_Renderer->DrawEnd();
+        glViewport(0, 0, WIDTH, HEIGHT);
         RenderImGui();
         glfwSwapBuffers(m_Window);
     }

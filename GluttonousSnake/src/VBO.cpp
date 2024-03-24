@@ -16,12 +16,13 @@ namespace GS
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_id));
 		GLCall(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW));
 	}
-	bool VertexBuffer::AddData(unsigned int offset, unsigned int size, const void* data)
+	bool VertexBuffer::AddData( unsigned int size, const void* data)
 	{
 		if(size + m_ValidSize > m_uSize)
 			return false;
 		Bind();
-		GLCall(glBufferSubData(GL_ARRAY_BUFFER, offset, size, data));
+		GLCall(glBufferSubData(GL_ARRAY_BUFFER, m_ValidSize, size, data));
+		m_ValidSize += size;
 		return true;
 	}
 	void VertexBuffer::ClearData()

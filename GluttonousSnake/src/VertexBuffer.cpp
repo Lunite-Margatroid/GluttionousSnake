@@ -18,7 +18,7 @@ LM::VertexBuffer::~VertexBuffer()
 	GLCall(glDeleteBuffers(1, &m_id));
 }
 
-void LM::VertexBuffer::Init(unsigned int size, void* data)
+void LM::VertexBuffer::Init(unsigned int size, const void* data)
 {
 	m_uSize = size;
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, m_id));

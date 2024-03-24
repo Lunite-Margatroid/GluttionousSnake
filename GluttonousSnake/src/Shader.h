@@ -1,5 +1,4 @@
 #pragma once
-#include "Texture.h"
 namespace LM
 {
 	class Shader
@@ -32,12 +31,7 @@ namespace LM
 		void SetUniformMatrix4f(const std::string& valueName, bool transpose, const GLfloat* value);
 
 		void SetUniformMatrix3f(const std::string& valueName, bool transpose, const GLfloat* value);
-		/// <summary>
-		/// 不用提前绑定texture 不推荐使用
-		/// </summary>
-		/// <param name="valueName"></param>
-		/// <param name="texture"></param>
-		void SetUniformTexture(const std::string& valueName, Texture& texture);
+
 		/// <summary>
 		/// 推荐使用这个重载
 		/// </summary>
