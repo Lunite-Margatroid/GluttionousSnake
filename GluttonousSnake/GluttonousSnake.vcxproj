@@ -206,6 +206,11 @@
       <Project>{ee4a26df-5f6a-4dc0-afd1-981c403777cc}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shader\gs_FragShader.shader" />
+    <None Include="res\shader\gs_GeoShader.shader" />
+    <None Include="res\shader\gs_VertexShader.shader" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -10,11 +10,13 @@ namespace GS
         Init();
         m_Renderer = new Renderer();
         Input::Init(m_Window);
+        m_GameScene = new GameScene();
     }
 
     Application::~Application()
     {
         delete m_Renderer;
+        delete m_GameScene;
         Input::FreeInstance();
         AppEnd();
     }
@@ -30,6 +32,8 @@ namespace GS
         ImGuiIO& io = ImGui::GetIO(); (void)io;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
         ImGui::StyleColorsDark();
 
@@ -37,9 +41,14 @@ namespace GS
         const char* glsl_version = "#version 410";
         ImGui_ImplOpenGL3_Init(glsl_version);
 
-        glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
 
-        GLFW_PRESS;
+        glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
     }
 
     void Application::Run()
@@ -50,6 +59,7 @@ namespace GS
             glfwPollEvents();
             Render();
 
+            m_GameScene->Update();
         }
     }
 
@@ -74,20 +84,36 @@ namespace GS
         ImGui::ShowDemoWindow(&m_DemoWindow);
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
     }
 
     void Application::Render()
     {
         glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(0, 0, 900, 900);
 
         m_Renderer->DrawBegin();
-        glViewport(0, 0, 900, 900);
         for(int i=0;i<30;i++)
             for (int j = 0; j < 30; j++)
             {
                 m_Renderer->DrawRect(glm::vec2(i, j), glm::vec4( float(i) / 30.f , float(j) / 30.0f, 0.5f, 1.0f));
             }
         m_Renderer->DrawEnd();
+
+        m_Renderer->DrawBegin();
+        m_GameScene->ForEach([&](const glm::vec2& pos) {
+            m_Renderer->DrawRect(pos, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+            });
+        m_Renderer->DrawEnd();
+
         glViewport(0, 0, WIDTH, HEIGHT);
         RenderImGui();
         glfwSwapBuffers(m_Window);

@@ -5,7 +5,7 @@ namespace GS
 	struct Node
 	{
 		glm::vec2 pos;
-		Node* next;
+		Node* next, *last;
 	};
 
 	enum class HeadDir
@@ -24,26 +24,40 @@ namespace GS
 
 		bool m_HitWall;
 
-		float m_MoveTimer;
-		float m_Speed; // 秒/格子
+		int m_Length;
 
-		float m_DeltaTime;
-		float m_CurrentTime;
-		float m_LastTime;
+		double m_MoveTimer;
+		double m_Speed; // 秒/格子
+
+		double m_DeltaTime;
+		double m_CurrentTime;
+		double m_LastTime;
 
 		glm::vec2 m_FoodPos;
 
+		HeadDir m_Dir;
+
+		bool m_First;
 		void TimerUpdate();
 		bool HitWall();
 		bool BiteSelf();
 		void GenerateFood();
 		void Step();
 		void GetInput();
+		void Init();
+		void GameOver();
+
+		inline std::pair<float, float> GenerateRand()
+		{
+			return std::make_pair(float(rand() % m_Width), float(rand() % m_Height));
+		}
 	public:
-		GameScene(float m_Speed = 1.0f, bool hitWall =false, int width = 30, int height = 30);
+		GameScene(float Speed = 1.0f, bool hitWall =false, int width = 30, int height = 30);
 		~GameScene();
 		void Update();
 		void ForEach(std::function<void(const glm::vec2&)> func);
+		bool IsGameOver();
+		void Reset();
 		
 	};
 }

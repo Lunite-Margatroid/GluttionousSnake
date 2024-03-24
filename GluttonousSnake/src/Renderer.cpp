@@ -7,12 +7,12 @@ namespace GS
 	{
 		glm::mat4 projectionTrans = glm::ortho(0.0f, 30.0f, 0.0f, 30.0f, -1.0f, 1.0f);
 		glm::mat4 viewTrans = glm::lookAt(
-			glm::vec3(15.0f, 15.0f, 0.0f),
-			glm::vec3(15.0f, 15.0f, -1.0f),
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
 			glm::vec3(0.0f, 1.0f, 0.0f)
 		);
 		m_Shader.Bind();
-		m_Shader.SetUniform1f("u_Width", 1.0f);
+		m_Shader.SetUniform1f("u_Width", 1.0f / 15.f);
 		m_Shader.SetUniformMatrix4f("u_ProjectionTrans", false, glm::value_ptr(projectionTrans));
 		m_Shader.SetUniformMatrix4f("u_ViewTrans", false, glm::value_ptr(viewTrans));
 		GLCall(glBindVertexArray(m_vao));

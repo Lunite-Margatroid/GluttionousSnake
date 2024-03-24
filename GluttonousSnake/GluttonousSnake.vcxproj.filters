@@ -93,4 +93,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="res\shader\gs_FragShader.shader" />
+    <None Include="res\shader\gs_GeoShader.shader" />
+    <None Include="res\shader\gs_VertexShader.shader" />
+  </ItemGroup>
 </Project>

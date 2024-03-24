@@ -1,6 +1,7 @@
 #pragma once
 #include "Renderer.h"
 #include "Input.h"
+#include "GameScene.h"
 namespace GS
 {
 
@@ -14,6 +15,8 @@ namespace GS
 		float m_LastTime;
 		float m_CurrentTime;
 		float m_DeltaTime;
+
+		GameScene* m_GameScene;
 
 		void Init();
 		void AppEnd();
