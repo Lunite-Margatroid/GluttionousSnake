@@ -9,11 +9,13 @@ namespace GS
     {
         Init();
         m_Renderer = new Renderer();
+        Input::Init(m_Window);
     }
 
     Application::~Application()
     {
         delete m_Renderer;
+        Input::FreeInstance();
         AppEnd();
     }
 
@@ -36,6 +38,8 @@ namespace GS
         ImGui_ImplOpenGL3_Init(glsl_version);
 
         glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+
+        GLFW_PRESS;
     }
 
     void Application::Run()
@@ -45,6 +49,7 @@ namespace GS
             m_Run = (glfwWindowShouldClose(m_Window) == 0);
             glfwPollEvents();
             Render();
+
         }
     }
 
@@ -86,6 +91,24 @@ namespace GS
         glViewport(0, 0, WIDTH, HEIGHT);
         RenderImGui();
         glfwSwapBuffers(m_Window);
+    }
+
+    void Application::UpdateTime()
+    {
+        static bool first = true;
+        if (first)
+        {
+            m_CurrentTime= glfwGetTime();
+            m_LastTime = m_CurrentTime;
+            m_DeltaTime = 0.0f;
+            first = false;
+            return;
+        }
+
+        m_CurrentTime = glfwGetTime();
+        m_DeltaTime = m_CurrentTime - m_LastTime;
+        m_LastTime = m_CurrentTime;
+
     }
 
 }

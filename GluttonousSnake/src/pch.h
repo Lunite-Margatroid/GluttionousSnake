@@ -11,6 +11,7 @@
 #include <utility>
 #include <string.h>
 
+#include <functional>
 
 #include <stdio.h>
 #include <stdlib.h>
