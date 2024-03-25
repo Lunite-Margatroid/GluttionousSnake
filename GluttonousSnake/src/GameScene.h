@@ -46,6 +46,7 @@ namespace GS
 		void GetInput();
 		void Init();
 		void GameOver();
+		bool IsGetFood();
 
 		inline std::pair<float, float> GenerateRand()
 		{
@@ -56,6 +57,7 @@ namespace GS
 		~GameScene();
 		void Update();
 		void ForEach(std::function<void(const glm::vec2&)> func);
+		const glm::vec2& GetFoodPos()const;
 		bool IsGameOver();
 		void Reset();
 		

@@ -5,12 +5,12 @@
 namespace GS
 {
 
-    Application::Application() :m_Run(true), m_DemoWindow(true)
+    Application::Application() :m_Run(true), m_DemoWindow(false)
     {
         Init();
         m_Renderer = new Renderer();
         Input::Init(m_Window);
-        m_GameScene = new GameScene();
+        m_GameScene = new GameScene(0.2f);
     }
 
     Application::~Application()
@@ -75,13 +75,15 @@ namespace GS
 
     void Application::RenderImGui()
     {
-        glfwPollEvents();
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow(&m_DemoWindow);
+        ImGui::Begin("DemoWindow");
+        ImGui::Checkbox("DemoWindow", &m_DemoWindow);
+        ImGui::End();
+        if(m_DemoWindow)
+            ImGui::ShowDemoWindow();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -109,6 +111,7 @@ namespace GS
         m_Renderer->DrawEnd();
 
         m_Renderer->DrawBegin();
+        m_Renderer->DrawRect(m_GameScene->GetFoodPos(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         m_GameScene->ForEach([&](const glm::vec2& pos) {
             m_Renderer->DrawRect(pos, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
             });

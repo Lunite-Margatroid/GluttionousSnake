@@ -26,6 +26,31 @@ namespace GS
 			if (y >= m_Height || y < 0)
 				return true;
 		}
+		else
+		{
+			int x = m_Head->pos.x;
+			if (x >= m_Width)
+			{
+				m_Head->pos.x = 0;
+				return false;
+			}
+			if (x < 0)
+			{
+				m_Head->pos.x = m_Width - 1;
+				return false;
+			}
+			int y = m_Head->pos.y;
+			if (y >= m_Height)
+			{
+				m_Head->pos.y = 0;
+				return false;
+			}
+			if (y < 0)
+			{
+				m_Head->pos.y = m_Height - 1;
+				return false;
+			}
+		}
 		return false;
 	}
 	bool GameScene::BiteSelf()
@@ -42,6 +67,7 @@ namespace GS
 	void GameScene::GenerateFood()
 	{
 		bool flag = true;
+		std::pair<float, float> coord;
 		do
 		{
 			flag = true;
@@ -54,12 +80,15 @@ namespace GS
 					break;
 				}
 			}
+			m_FoodPos.x = coord.first;
+			m_FoodPos.y = coord.second;
 		} while (!flag);
 	}
 	void GameScene::Step()
 	{
 		if (m_Head == NULL)
 			return;
+		
 		glm::vec2 v(0.0f);
 		switch (m_Dir)
 		{
@@ -77,6 +106,19 @@ namespace GS
 			break;
 		default:
 			break;
+		}
+
+		if (IsGetFood())
+		{
+			auto newHead = new Node();
+			newHead->pos = m_Head->pos + v;
+			newHead->next = m_Head;
+			newHead->last = NULL;
+			m_Head->last = newHead;
+			m_Head = newHead;
+
+			GenerateFood();
+			return;
 		}
 
 		if (m_Tail == m_Head)
@@ -100,19 +142,19 @@ namespace GS
 	}
 	void GameScene::GetInput()
 	{
-		if (Input::IsKeyPressing(GLFW_KEY_LEFT))
+		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right)
 		{
 			m_Dir = HeadDir::left;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_RIGHT))
+		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left)
 		{
 			m_Dir = HeadDir::right;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_UP))
+		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down)
 		{
 			m_Dir = HeadDir::up;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_DOWN))
+		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up)
 		{
 			m_Dir = HeadDir::down;
 		}
@@ -125,6 +167,7 @@ namespace GS
 		m_Head->next = NULL;
 		m_Head->last = NULL;
 		m_Head->pos = glm::vec2(float(m_Width/2), float(m_Height/2));
+		GenerateFood();
 	}
 	void GameScene::GameOver()
 	{
@@ -140,12 +183,18 @@ namespace GS
 		m_Head = NULL;
 		m_Tail = NULL;
 	}
+	inline bool GameScene::IsGetFood()
+	{
+		return m_Head->pos == m_FoodPos;
+		
+	}
 	GameScene::GameScene(float speed, bool hitWall, int width, int height)
 		:m_Speed(speed), m_HitWall(hitWall), m_Width(width), m_Height(height)
 	{
 		m_Head = NULL;
 		m_Tail = NULL;
 		m_Dir = HeadDir::right;
+		srand(time(0));
 		Init();
 	}
 	GameScene::~GameScene()
@@ -162,6 +211,9 @@ namespace GS
 			Step();
 			m_MoveTimer = 0.0;
 		}
+		if (HitWall())
+		{
+		}
 	}
 	void GameScene::ForEach(std::function<void(const glm::vec2&)> func)
 	{
@@ -169,5 +221,9 @@ namespace GS
 		{
 			func(iter->pos);
 		}
+	}
+	const glm::vec2& GameScene::GetFoodPos() const
+	{
+		return m_FoodPos;
 	}
 }
