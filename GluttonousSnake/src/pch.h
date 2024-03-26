@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <thread>
+#include <mutex>
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"

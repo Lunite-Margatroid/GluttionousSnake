@@ -1,5 +1,6 @@
 #pragma once
 #include "Input.h"
+#include "MutexLock.h"
 namespace GS
 {
 	struct Node
@@ -37,6 +38,8 @@ namespace GS
 
 		HeadDir m_Dir;
 
+		bool m_InterruptFlag;
+
 		bool m_First;
 		void TimerUpdate();
 		bool HitWall();
@@ -60,6 +63,8 @@ namespace GS
 		const glm::vec2& GetFoodPos()const;
 		bool IsGameOver();
 		void Reset();
-		
+		void Interrupt();
+		void Coutinue();
+		bool GetInterruptFlag() const;
 	};
 }

@@ -53,14 +53,17 @@ namespace GS
 
     void Application::Run()
     {
+        std::thread thr(&(GameScene::Update), m_GameScene);
+
         while (m_Run)
         {
             m_Run = (glfwWindowShouldClose(m_Window) == 0);
             glfwPollEvents();
             Render();
-
-            m_GameScene->Update();
+            std::cout << "[info] Application Running.\n";
+            //m_GameScene->Update();
         }
+        thr.join();
     }
 
     void Application::AppEnd()
@@ -81,6 +84,10 @@ namespace GS
 
         ImGui::Begin("DemoWindow");
         ImGui::Checkbox("DemoWindow", &m_DemoWindow);
+        if (ImGui::Button("Game End"))
+        {
+            m_GameScene->Interrupt();
+        }
         ImGui::End();
         if(m_DemoWindow)
             ImGui::ShowDemoWindow();
@@ -103,18 +110,22 @@ namespace GS
         glViewport(0, 0, 900, 900);
 
         m_Renderer->DrawBegin();
+        MutexLock::Lock("Snake");
         for(int i=0;i<30;i++)
             for (int j = 0; j < 30; j++)
             {
                 m_Renderer->DrawRect(glm::vec2(i, j), glm::vec4( float(i) / 30.f , float(j) / 30.0f, 0.5f, 1.0f));
             }
+        MutexLock::Unlock("Snake");
         m_Renderer->DrawEnd();
 
         m_Renderer->DrawBegin();
         m_Renderer->DrawRect(m_GameScene->GetFoodPos(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        MutexLock::Lock("Food");
         m_GameScene->ForEach([&](const glm::vec2& pos) {
             m_Renderer->DrawRect(pos, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
             });
+        MutexLock::Unlock("Food");
         m_Renderer->DrawEnd();
 
         glViewport(0, 0, WIDTH, HEIGHT);

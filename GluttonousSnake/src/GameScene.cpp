@@ -66,23 +66,23 @@ namespace GS
 	}
 	void GameScene::GenerateFood()
 	{
-		bool flag = true;
-		std::pair<float, float> coord;
-		do
-		{
-			flag = true;
-			std::pair<float, float> coord = GenerateRand();
-			for (auto iter = m_Head; iter != NULL; iter = iter->next)
+			bool flag = true;
+			std::pair<float, float> coord;
+			do
 			{
-				if (coord.first == iter->pos.x && coord.second == iter->pos.y)
+				flag = true;
+				std::pair<float, float> coord = GenerateRand();
+				for (auto iter = m_Head; iter != NULL; iter = iter->next)
 				{
-					flag = false;
-					break;
+					if (coord.first == iter->pos.x && coord.second == iter->pos.y)
+					{
+						flag = false;
+						break;
+					}
 				}
-			}
-			m_FoodPos.x = coord.first;
-			m_FoodPos.y = coord.second;
-		} while (!flag);
+				m_FoodPos.x = coord.first;
+				m_FoodPos.y = coord.second;
+			} while (!flag);
 	}
 	void GameScene::Step()
 	{
@@ -108,22 +108,30 @@ namespace GS
 			break;
 		}
 
+
+
 		if (IsGetFood())
 		{
+			MutexLock::Lock("Snake");
 			auto newHead = new Node();
 			newHead->pos = m_Head->pos + v;
 			newHead->next = m_Head;
 			newHead->last = NULL;
 			m_Head->last = newHead;
 			m_Head = newHead;
+			MutexLock::Unlock("Snake");
 
+			MutexLock::Lock("Food");
 			GenerateFood();
+			MutexLock::Unlock("Food");
 			return;
 		}
 
+		MutexLock::Lock("Snake");
 		if (m_Tail == m_Head)
 		{
 			m_Tail->pos += v;
+			MutexLock::Unlock("Snake");
 			return;
 		}
 
@@ -139,6 +147,7 @@ namespace GS
 
 		m_Head = m_Tail;
 		m_Tail = t;
+		MutexLock::Unlock("Snake");
 	}
 	void GameScene::GetInput()
 	{
@@ -161,6 +170,7 @@ namespace GS
 	}
 	void GameScene::Init()
 	{
+		m_InterruptFlag = false;
 		m_First = true;
 		m_MoveTimer = 0.0;
 		m_Tail = m_Head = new Node();
@@ -203,16 +213,20 @@ namespace GS
 	}
 	void GameScene::Update()
 	{
-		TimerUpdate();
-		GetInput();
-		m_MoveTimer += m_DeltaTime;
-		if (m_MoveTimer >= m_Speed)
+		while (!GetInterruptFlag())
 		{
-			Step();
-			m_MoveTimer = 0.0;
-		}
-		if (HitWall())
-		{
+			std::cout << "[info] Game Running.\n";
+			TimerUpdate();
+			GetInput();
+			m_MoveTimer += m_DeltaTime;
+			if (m_MoveTimer >= m_Speed)
+			{
+				Step();
+				m_MoveTimer = 0.0;
+			}
+			if (HitWall())
+			{
+			}
 		}
 	}
 	void GameScene::ForEach(std::function<void(const glm::vec2&)> func)
@@ -225,5 +239,24 @@ namespace GS
 	const glm::vec2& GameScene::GetFoodPos() const
 	{
 		return m_FoodPos;
+	}
+	void GameScene::Interrupt()
+	{
+		MutexLock::Lock("InterruptFlag");
+		m_InterruptFlag = true;
+		MutexLock::Unlock("InterruptFlag");
+	}
+	void GameScene::Coutinue()
+	{
+		MutexLock::Lock("InterruptFlag");
+		m_InterruptFlag = false;
+		MutexLock::Unlock("InterruptFlag");
+	}
+	bool GameScene::GetInterruptFlag() const
+	{
+		MutexLock::Lock("InterruptFlag");
+		bool ret = m_InterruptFlag;
+		MutexLock::Unlock("InterruptFlag");
+		return ret;
 	}
 }
