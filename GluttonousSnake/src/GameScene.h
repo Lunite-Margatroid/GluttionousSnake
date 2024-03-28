@@ -41,6 +41,11 @@ namespace GS
 		bool m_InterruptFlag;
 
 		bool m_First;
+
+		bool m_GameOver;
+
+		bool m_Run;
+
 		void TimerUpdate();
 		bool HitWall();
 		bool BiteSelf();
@@ -50,6 +55,7 @@ namespace GS
 		void Init();
 		void GameOver();
 		bool IsGetFood();
+		void Clear();
 
 		inline std::pair<float, float> GenerateRand()
 		{
@@ -61,10 +67,12 @@ namespace GS
 		void Update();
 		void ForEach(std::function<void(const glm::vec2&)> func);
 		const glm::vec2& GetFoodPos()const;
-		bool IsGameOver();
+		bool IsGameOver() const;
 		void Reset();
 		void Interrupt();
-		void Coutinue();
+		void Continue();
 		bool GetInterruptFlag() const;
+		bool IsRun() const;
+		void GameThreadOver();
 	};
 }

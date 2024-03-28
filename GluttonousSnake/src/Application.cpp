@@ -53,6 +53,7 @@ namespace GS
 
     void Application::Run()
     {
+        m_GameScene->Interrupt();
         std::thread thr(&(GameScene::Update), m_GameScene);
 
         while (m_Run)
@@ -82,11 +83,35 @@ namespace GS
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("DemoWindow");
+        ImGui::Begin("Console");
         ImGui::Checkbox("DemoWindow", &m_DemoWindow);
-        if (ImGui::Button("Game End"))
+        if (m_GameScene->GetInterruptFlag() && !m_GameScene->IsGameOver())    // 暂停状态
         {
-            m_GameScene->Interrupt();
+            ImGui::Text("Status: Pause");
+            if (ImGui::Button("Restart"))
+            {
+                m_GameScene->Continue();
+            }
+        }
+        if(!m_GameScene->GetInterruptFlag() && !m_GameScene->IsGameOver())
+        {
+            ImGui::Text("Status: Run");
+            if(ImGui::Button("Game Pause"))
+                m_GameScene->Interrupt();
+        }
+
+        if (m_GameScene->IsGameOver())          // 撞墙或者吃到自己
+        {
+            ImGui::Text("Status: Game Over");
+            if (ImGui::Button("Reset"))
+            {
+                m_GameScene->Reset();
+            }
+        }
+        if (ImGui::Button("Exit"))
+        {
+            m_GameScene->GameThreadOver();
+            m_Run = false;
         }
         ImGui::End();
         if(m_DemoWindow)

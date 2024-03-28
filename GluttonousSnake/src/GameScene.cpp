@@ -173,6 +173,8 @@ namespace GS
 		m_InterruptFlag = false;
 		m_First = true;
 		m_MoveTimer = 0.0;
+		m_GameOver = false;
+		m_Run = true;
 		m_Tail = m_Head = new Node();
 		m_Head->next = NULL;
 		m_Head->last = NULL;
@@ -181,22 +183,30 @@ namespace GS
 	}
 	void GameScene::GameOver()
 	{
-		if(m_Head)
-		for (auto iter = m_Head->next; iter != NULL; iter = iter->next)
-		{
-			delete iter->last;
-		}
+		MutexLock::Lock("GameOver");
+		m_GameOver = true;
+		MutexLock::Unlock("GameOver");
+	}
+	inline bool GameScene::IsGetFood()
+	{
+		return m_Head->pos == m_FoodPos;
+		
+	}
+	void GameScene::Clear()
+	{
+		MutexLock::Lock("Snake");
+		if (m_Head)
+			for (auto iter = m_Head->next; iter != NULL; iter = iter->next)
+			{
+				delete iter->last;
+			}
 		if (m_Tail)
 		{
 			delete m_Tail;
 		}
 		m_Head = NULL;
 		m_Tail = NULL;
-	}
-	inline bool GameScene::IsGetFood()
-	{
-		return m_Head->pos == m_FoodPos;
-		
+		MutexLock::Unlock("Snake");
 	}
 	GameScene::GameScene(float speed, bool hitWall, int width, int height)
 		:m_Speed(speed), m_HitWall(hitWall), m_Width(width), m_Height(height)
@@ -209,23 +219,29 @@ namespace GS
 	}
 	GameScene::~GameScene()
 	{
+		Clear();
 		GameOver();
 	}
 	void GameScene::Update()
 	{
-		while (!GetInterruptFlag())
+		while (IsRun())
 		{
-			std::cout << "[info] Game Running.\n";
-			TimerUpdate();
-			GetInput();
-			m_MoveTimer += m_DeltaTime;
-			if (m_MoveTimer >= m_Speed)
+			if (!GetInterruptFlag())
 			{
-				Step();
-				m_MoveTimer = 0.0;
-			}
-			if (HitWall())
-			{
+				std::cout << "[info] Game Running.\n";
+				TimerUpdate();
+				GetInput();
+				m_MoveTimer += m_DeltaTime;
+				if (m_MoveTimer >= m_Speed)
+				{
+					Step();
+					m_MoveTimer = 0.0;
+				}
+				if (HitWall() || BiteSelf())
+				{
+					GameOver();
+					Interrupt();
+				}
 			}
 		}
 	}
@@ -240,13 +256,29 @@ namespace GS
 	{
 		return m_FoodPos;
 	}
+	bool GameScene::IsGameOver() const
+	{
+		bool t;
+		MutexLock::Lock("GameOver");
+		t = m_GameOver;
+		MutexLock::Unlock("GameOver");
+		return t;
+	}
+	void GameScene::Reset()
+	{
+		Clear();
+		GameOver();
+		Init();
+		GenerateFood();
+		Continue();
+	}
 	void GameScene::Interrupt()
 	{
 		MutexLock::Lock("InterruptFlag");
 		m_InterruptFlag = true;
 		MutexLock::Unlock("InterruptFlag");
 	}
-	void GameScene::Coutinue()
+	void GameScene::Continue()
 	{
 		MutexLock::Lock("InterruptFlag");
 		m_InterruptFlag = false;
@@ -258,5 +290,19 @@ namespace GS
 		bool ret = m_InterruptFlag;
 		MutexLock::Unlock("InterruptFlag");
 		return ret;
+	}
+	bool GameScene::IsRun() const
+	{
+		bool t;
+		MutexLock::Lock("Run");
+		t =  m_Run;
+		MutexLock::Unlock("Run");
+		return t;
+	}
+	void GameScene::GameThreadOver()
+	{
+		MutexLock::Lock("Run");
+		m_Run = false;
+		MutexLock::Unlock("Run");
 	}
 }
