@@ -69,4 +69,9 @@ namespace GS
 		instance->m_LockMap[str] = instance->m_MutexLock.size() - 1;
 		return (instance->m_MutexLock[instance->m_MutexLock.size() - 1])->try_lock();
 	}
+	void MutexLock::Free()
+	{
+		if (s_Instance)
+			delete s_Instance;
+	}
 }

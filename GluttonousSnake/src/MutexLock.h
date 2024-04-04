@@ -16,5 +16,7 @@ namespace GS
 		static void Lock(const std::string& str);
 		static void Unlock(const std::string& str);
 		static bool TryLock(const std::string& str);
+
+		static void Free();
 	};
 }

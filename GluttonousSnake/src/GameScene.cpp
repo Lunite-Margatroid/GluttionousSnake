@@ -109,9 +109,16 @@ namespace GS
 		}
 
 
-
 		if (IsGetFood())
 		{
+			MutexLock::Lock("Food");
+			GenerateFood();
+			MutexLock::Unlock("Food");
+		}
+
+		if (m_Lengthening > 0)
+		{
+			m_Lengthening--;
 			MutexLock::Lock("Snake");
 			auto newHead = new Node();
 			newHead->pos = m_Head->pos + v;
@@ -120,10 +127,6 @@ namespace GS
 			m_Head->last = newHead;
 			m_Head = newHead;
 			MutexLock::Unlock("Snake");
-
-			MutexLock::Lock("Food");
-			GenerateFood();
-			MutexLock::Unlock("Food");
 			return;
 		}
 
@@ -151,21 +154,50 @@ namespace GS
 	}
 	void GameScene::GetInput()
 	{
+		if (m_NextInput != HeadDir::none)
+		{
+			m_Dir = m_NextInput;
+			m_GetInput = false;
+		}
 		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right)
 		{
 			m_Dir = HeadDir::left;
+			m_GetInput = false;
 		}
 		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left)
 		{
 			m_Dir = HeadDir::right;
+			m_GetInput = false;
 		}
 		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down)
 		{
 			m_Dir = HeadDir::up;
+			m_GetInput = false;
 		}
 		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up)
 		{
 			m_Dir = HeadDir::down;
+			m_GetInput = false;
+		}
+		m_NextInput = HeadDir::none;
+	}
+	void GameScene::GetNextInput()
+	{
+		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right)
+		{
+			m_NextInput = HeadDir::left;
+		}
+		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left)
+		{
+			m_NextInput = HeadDir::right;
+		}
+		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down)
+		{
+			m_NextInput = HeadDir::up;
+		}
+		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up)
+		{
+			m_NextInput = HeadDir::down;
 		}
 	}
 	void GameScene::Init()
@@ -173,8 +205,9 @@ namespace GS
 		m_InterruptFlag = false;
 		m_First = true;
 		m_MoveTimer = 0.0;
-		m_GameOver = false;
+		m_GameOver = true;
 		m_Run = true;
+		IsRun();
 		m_Tail = m_Head = new Node();
 		m_Head->next = NULL;
 		m_Head->last = NULL;
@@ -189,8 +222,10 @@ namespace GS
 	}
 	inline bool GameScene::IsGetFood()
 	{
-		return m_Head->pos == m_FoodPos;
-		
+		bool ret = m_Head->pos == m_FoodPos;
+		if(ret)
+			m_Lengthening += m_Lengthen;
+		return ret;
 	}
 	void GameScene::Clear()
 	{
@@ -207,12 +242,16 @@ namespace GS
 		m_Head = NULL;
 		m_Tail = NULL;
 		MutexLock::Unlock("Snake");
+		m_Lengthening = 0;
 	}
-	GameScene::GameScene(float speed, bool hitWall, int width, int height)
-		:m_Speed(speed), m_HitWall(hitWall), m_Width(width), m_Height(height)
+	GameScene::GameScene(float speed, bool hitWall, int width, int height, int lengthen)
+		:m_Speed(speed), m_HitWall(hitWall), m_Width(width), m_Height(height),m_Lengthen(lengthen)
 	{
 		m_Head = NULL;
 		m_Tail = NULL;
+		SetLengthen(lengthen);
+		SetSpeed(speed);
+		m_Lengthening  = 0;
 		m_Dir = HeadDir::right;
 		srand(time(0));
 		Init();
@@ -230,11 +269,19 @@ namespace GS
 			{
 				std::cout << "[info] Game Running.\n";
 				TimerUpdate();
-				GetInput();
+				if (m_GetInput)
+				{
+					GetInput();
+				}
+				else
+				{
+					GetNextInput();
+				}
 				m_MoveTimer += m_DeltaTime;
 				if (m_MoveTimer >= m_Speed)
 				{
 					Step();
+					m_GetInput = true;
 					m_MoveTimer = 0.0;
 				}
 				if (HitWall() || BiteSelf())
@@ -267,10 +314,11 @@ namespace GS
 	void GameScene::Reset()
 	{
 		Clear();
-		GameOver();
+		//GameOver();
 		Init();
 		GenerateFood();
 		Continue();
+		m_GameOver = false;
 	}
 	void GameScene::Interrupt()
 	{
@@ -304,5 +352,33 @@ namespace GS
 		MutexLock::Lock("Run");
 		m_Run = false;
 		MutexLock::Unlock("Run");
+	}
+	void GameScene::SetSpeed(double speed)
+	{
+		MutexLock::Lock("Speed");
+		m_Speed = speed;
+		MutexLock::Unlock("Speed");
+	}
+	double GameScene::GetSpeed() const
+	{
+		return m_Speed;
+	}
+	void GameScene::SetLengthen(int lengthen)
+	{
+		MutexLock::Lock("Lengthen");
+		m_Lengthen = lengthen;
+		MutexLock::Unlock("Lengthen");
+	}
+	int GameScene::GetLengthen() const
+	{
+		return m_Lengthen;
+	}
+	bool GameScene::GetHitWall() const
+	{
+		return m_HitWall;
+	}
+	void GameScene::SetHitWall(bool hitWall)
+	{
+		m_HitWall = hitWall;
 	}
 }

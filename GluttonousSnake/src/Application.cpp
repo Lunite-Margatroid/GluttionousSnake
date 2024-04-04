@@ -19,6 +19,7 @@ namespace GS
         delete m_GameScene;
         Input::FreeInstance();
         AppEnd();
+        MutexLock::Free();
     }
 
     void Application::Init()
@@ -79,6 +80,10 @@ namespace GS
 
     void Application::RenderImGui()
     {
+        static double speed = 1.0f;
+        static int lengthen = 1;
+        static bool throughWall = true;
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -103,10 +108,61 @@ namespace GS
         if (m_GameScene->IsGameOver())          // 撞墙或者吃到自己
         {
             ImGui::Text("Status: Game Over");
-            if (ImGui::Button("Reset"))
+            if (ImGui::Button("Start"))
             {
                 m_GameScene->Reset();
+                m_GameScene->SetHitWall(!throughWall);
+                m_GameScene->SetSpeed(speed);
+                m_GameScene->SetLengthen(lengthen);
             }
+            // 调节速度
+            speed = m_GameScene->GetSpeed();
+            ImGui::Text("Speed(s/quad): ");
+            ImGui::SameLine();
+            if (ImGui::Button("-"))
+            {
+                if(speed > 0.0)
+                    speed -= 1.0 / 64;
+                m_GameScene->SetSpeed(speed);
+            }
+            ImGui::SameLine();
+            ImGui::Text("%lf", speed);
+            ImGui::SameLine();
+            if (ImGui::Button("+"))
+            {
+                if (speed < 1.0)
+                    speed += 1.0 / 64;
+                m_GameScene->SetSpeed(speed);
+            }
+
+            // 调节伸长
+            lengthen = m_GameScene->GetLengthen();
+            ImGui::Text("Lengthen(quad/food): ");
+            ImGui::SameLine();
+            if (ImGui::Button("down"))
+            {
+                if (lengthen > 1)
+                {
+                    lengthen -= 1;
+                    m_GameScene->SetLengthen(lengthen);
+                }
+            }
+            ImGui::SameLine();
+            ImGui::Text("%d", lengthen);
+            ImGui::SameLine();
+            if (ImGui::Button("up"))
+            {
+                if (lengthen < 10)
+                {
+                    lengthen += 1;
+                    m_GameScene->SetLengthen(lengthen);
+                }
+            }
+
+            // 调节撞墙
+            throughWall = !(m_GameScene->GetHitWall());
+            ImGui::Checkbox("Through Wall",&throughWall);
+            m_GameScene->SetHitWall(!throughWall);
         }
         if (ImGui::Button("Exit"))
         {
@@ -135,22 +191,24 @@ namespace GS
         glViewport(0, 0, 900, 900);
 
         m_Renderer->DrawBegin();
-        MutexLock::Lock("Snake");
+        
         for(int i=0;i<30;i++)
             for (int j = 0; j < 30; j++)
             {
-                m_Renderer->DrawRect(glm::vec2(i, j), glm::vec4( float(i) / 30.f , float(j) / 30.0f, 0.5f, 1.0f));
+                m_Renderer->DrawRect(glm::vec2(i, j), glm::vec4( 0.0, 0.0, 0.0, 1.0f));
             }
-        MutexLock::Unlock("Snake");
+        
         m_Renderer->DrawEnd();
 
         m_Renderer->DrawBegin();
-        m_Renderer->DrawRect(m_GameScene->GetFoodPos(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         MutexLock::Lock("Food");
+        m_Renderer->DrawRect(m_GameScene->GetFoodPos(), glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+        MutexLock::Unlock("Food");
+        MutexLock::Lock("Snake");
         m_GameScene->ForEach([&](const glm::vec2& pos) {
             m_Renderer->DrawRect(pos, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
             });
-        MutexLock::Unlock("Food");
+        MutexLock::Unlock("Snake");
         m_Renderer->DrawEnd();
 
         glViewport(0, 0, WIDTH, HEIGHT);
