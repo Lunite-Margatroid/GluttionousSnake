@@ -5,7 +5,7 @@
 namespace GS
 {
 
-    Application::Application() :m_Run(true), m_DemoWindow(false)
+    Application::Application() :m_Run(true)
     {
         Init();
         m_Renderer = new Renderer();
@@ -99,7 +99,6 @@ namespace GS
         ImGui::NewFrame();
 
         ImGui::Begin("Console");
-        ImGui::Checkbox("DemoWindow", &m_DemoWindow);
         if (m_GameScene->GetInterruptFlag() && !m_GameScene->IsGameOver())    // ÔÝÍ£×´Ì¬
         {
             ImGui::Text("Status: Pause");
@@ -180,8 +179,6 @@ namespace GS
             m_Run = false;
         }
         ImGui::End();
-        if(m_DemoWindow)
-            ImGui::ShowDemoWindow();
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

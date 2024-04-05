@@ -11,6 +11,7 @@ namespace GS
 		if (s_Instance)
 			return s_Instance;
 		s_Instance = new MutexLock();
+		return s_Instance;
 	}
 
 	MutexLock::MutexLock()

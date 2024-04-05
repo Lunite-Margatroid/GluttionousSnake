@@ -10,7 +10,6 @@ namespace GS
 	{
 		GLFWwindow* m_Window;
 		bool m_Run;
-		bool m_DemoWindow;
 
 		Renderer* m_Renderer;
 		float m_LastTime;

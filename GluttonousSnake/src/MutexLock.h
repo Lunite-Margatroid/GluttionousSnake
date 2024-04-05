@@ -10,9 +10,11 @@ namespace GS
 
 		std::vector<std::mutex*> m_MutexLock;
 		std::unordered_map<std::string, int> m_LockMap;
+		
+		
+	public:
 		MutexLock();
 		~MutexLock();
-	public:
 		static void Lock(const std::string& str);
 		static void Unlock(const std::string& str);
 		static bool TryLock(const std::string& str);
