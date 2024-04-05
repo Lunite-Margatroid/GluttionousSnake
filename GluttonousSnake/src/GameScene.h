@@ -38,6 +38,7 @@ namespace GS
 
 		HeadDir m_Dir;
 		HeadDir m_NextInput;
+		std::queue<HeadDir> m_InQueue;
 
 		bool m_InterruptFlag;
 
@@ -53,6 +54,7 @@ namespace GS
 
 		bool m_GetInput;
 
+
 		void TimerUpdate();
 		bool HitWall();
 		bool BiteSelf();
@@ -65,13 +67,16 @@ namespace GS
 		bool IsGetFood();
 		void Clear();
 
+		
+
 		inline std::pair<float, float> GenerateRand()
 		{
 			return std::make_pair(float(rand() % m_Width), float(rand() % m_Height));
 		}
+		GameScene(float Speed = 1.0f, bool hitWall = false, int width = 30, int height = 30, int lengthen = 1);
 	public:
 		// speed的单位是秒/格  越小越快
-		GameScene(float Speed = 1.0f, bool hitWall =false, int width = 30, int height = 30, int lengthen = 1);
+		GameScene();
 		~GameScene();
 		void Update();
 		void ForEach(std::function<void(const glm::vec2&)> func);
@@ -89,5 +94,10 @@ namespace GS
 		int GetLengthen() const;
 		bool GetHitWall() const;
 		void SetHitWall(bool hitWall);
+
+		void KeyCallback(int key, int action);
+
+		static GameScene* s_Instance;
+		static GameScene* GetInstance();
 	};
 }

@@ -10,7 +10,7 @@ namespace GS
         Init();
         m_Renderer = new Renderer();
         Input::Init(m_Window);
-        m_GameScene = new GameScene(0.2f);
+        m_GameScene = GameScene::GetInstance();
     }
 
     Application::~Application()
@@ -25,6 +25,8 @@ namespace GS
     void Application::Init()
     {
         m_Window = init::InitGL();
+        // glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GL_TRUE);
+
 
         // Setup ImGui context
         IMGUI_CHECKVERSION();
@@ -50,6 +52,8 @@ namespace GS
         }
 
         glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
+
+        glfwSetKeyCallback(m_Window, ApplicationKeyCallback);
     }
 
     void Application::Run()
@@ -62,10 +66,16 @@ namespace GS
             m_Run = (glfwWindowShouldClose(m_Window) == 0);
             glfwPollEvents();
             Render();
-            std::cout << "[info] Application Running.\n";
+            //std::cout << "[info] Application Running.\n";
             //m_GameScene->Update();
         }
         thr.join();
+    }
+
+    void Application::ApplicationKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        ImGui_ImplGlfw_KeyCallback(window,  key, scancode, action, mods);
+        GameScene::GetInstance()->KeyCallback(key, action);
     }
 
     void Application::AppEnd()

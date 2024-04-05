@@ -2,6 +2,8 @@
 #include "GameScene.h"
 namespace GS
 {
+	GameScene* GameScene::s_Instance = nullptr;
+
 	void GameScene::TimerUpdate()
 	{
 		if (m_First)
@@ -16,15 +18,22 @@ namespace GS
 	}
 	bool GameScene::HitWall()
 	{
+		MutexLock::Lock("Snake");
 		if (m_HitWall)
 		{
 			int x = m_Head->pos.x;
 			if (x >= m_Width || x < 0)
+			{
+				MutexLock::Unlock("Snake");
 				return true;
+			}
 
 			int y = m_Head->pos.y;
 			if (y >= m_Height || y < 0)
+			{
+				MutexLock::Unlock("Snake");
 				return true;
+			}
 		}
 		else
 		{
@@ -32,36 +41,44 @@ namespace GS
 			if (x >= m_Width)
 			{
 				m_Head->pos.x = 0;
+				MutexLock::Unlock("Snake");
 				return false;
 			}
 			if (x < 0)
 			{
 				m_Head->pos.x = m_Width - 1;
+				MutexLock::Unlock("Snake");
 				return false;
 			}
 			int y = m_Head->pos.y;
 			if (y >= m_Height)
 			{
 				m_Head->pos.y = 0;
+				MutexLock::Unlock("Snake");
 				return false;
 			}
 			if (y < 0)
 			{
 				m_Head->pos.y = m_Height - 1;
+				MutexLock::Unlock("Snake");
 				return false;
 			}
 		}
+		MutexLock::Unlock("Snake");
 		return false;
 	}
 	bool GameScene::BiteSelf()
 	{
+		MutexLock::Lock("Snake");
 		for (auto iter = m_Head->next; iter != NULL; iter = iter->next)
 		{
 			if (m_Head->pos == iter->pos)
 			{
+				MutexLock::Unlock("Snake");
 				return true;
 			}
 		}
+		MutexLock::Unlock("Snake");
 		return false;
 	}
 	void GameScene::GenerateFood()
@@ -154,50 +171,73 @@ namespace GS
 	}
 	void GameScene::GetInput()
 	{
-		if (m_NextInput != HeadDir::none)
+		if (m_NextInput != HeadDir::none && m_Dir != m_NextInput)
 		{
 			m_Dir = m_NextInput;
 			m_GetInput = false;
+			//m_NextInput = HeadDir::none;
+			std::cout << "GetInput:\n";
+			std::cout <<  "m_Dir: " <<(int)m_Dir << std::endl;
+			std::cout << "m_NextInput: " << (int)m_NextInput << std::endl;
+			return;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right)
+		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right && m_Dir != HeadDir::left)
 		{
 			m_Dir = HeadDir::left;
 			m_GetInput = false;
+			m_NextInput = HeadDir::none;
+			return;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left)
+		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left && m_Dir != HeadDir::right)
 		{
 			m_Dir = HeadDir::right;
 			m_GetInput = false;
+			m_NextInput = HeadDir::none;
+			return;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down)
+		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down && m_Dir != HeadDir::up)
 		{
 			m_Dir = HeadDir::up;
 			m_GetInput = false;
+			m_NextInput = HeadDir::none;
+			return;
 		}
-		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up)
+		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up && m_Dir != HeadDir::down)
 		{
 			m_Dir = HeadDir::down;
 			m_GetInput = false;
+			m_NextInput = HeadDir::none;
+			return;
 		}
-		m_NextInput = HeadDir::none;
 	}
 	void GameScene::GetNextInput()
 	{
-		if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right)
+		if (m_NextInput == HeadDir::none)
 		{
-			m_NextInput = HeadDir::left;
-		}
-		if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left)
-		{
-			m_NextInput = HeadDir::right;
-		}
-		if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down)
-		{
-			m_NextInput = HeadDir::up;
-		}
-		if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up)
-		{
-			m_NextInput = HeadDir::down;
+			if (Input::IsKeyPressing(GLFW_KEY_LEFT) && m_Dir != HeadDir::right && m_Dir != HeadDir::left)
+			{
+				m_NextInput = HeadDir::left;
+				return;
+			}
+			if (Input::IsKeyPressing(GLFW_KEY_RIGHT) && m_Dir != HeadDir::left && m_Dir != HeadDir::right)
+			{
+				m_NextInput = HeadDir::right;
+				return;
+			}
+			if (Input::IsKeyPressing(GLFW_KEY_UP) && m_Dir != HeadDir::down && m_Dir != HeadDir::up)
+			{
+				m_NextInput = HeadDir::up;
+				return;
+			}
+			if (Input::IsKeyPressing(GLFW_KEY_DOWN) && m_Dir != HeadDir::up && m_Dir != HeadDir::down)
+			{
+				m_NextInput = HeadDir::down;
+				return;
+			}
+			if (m_NextInput != HeadDir::none) {
+				std::cout << "m_Dir: " << (int)m_Dir << std::endl;
+				std::cout << "m_NextInput: " << (int)m_NextInput << std::endl;
+			}
 		}
 	}
 	void GameScene::Init()
@@ -256,6 +296,10 @@ namespace GS
 		srand(time(0));
 		Init();
 	}
+	GameScene::GameScene()
+	{
+		__debugbreak();
+	}
 	GameScene::~GameScene()
 	{
 		Clear();
@@ -267,19 +311,28 @@ namespace GS
 		{
 			if (!GetInterruptFlag())
 			{
-				std::cout << "[info] Game Running.\n";
+				//std::cout << "[info] Game Running.\n";
 				TimerUpdate();
-				if (m_GetInput)
+				/*if (m_GetInput)
 				{
 					GetInput();
 				}
 				else
 				{
 					GetNextInput();
-				}
+				}*/
+
+
 				m_MoveTimer += m_DeltaTime;
 				if (m_MoveTimer >= m_Speed)
 				{
+					MutexLock::Lock("InputQueue");
+					if (!m_InQueue.empty())
+					{
+						m_Dir = m_InQueue.front();
+						m_InQueue.pop();
+					}
+					MutexLock::Unlock("InputQueue");
 					Step();
 					m_GetInput = true;
 					m_MoveTimer = 0.0;
@@ -380,5 +433,32 @@ namespace GS
 	void GameScene::SetHitWall(bool hitWall)
 	{
 		m_HitWall = hitWall;
+	}
+	void GameScene::KeyCallback(int key, int action)
+	{
+		if (action == GLFW_PRESS)
+		{
+			MutexLock::Lock("InputQueue");
+			switch (key)
+			{
+			case GLFW_KEY_RIGHT:
+				m_InQueue.push(HeadDir::right); break;
+			case GLFW_KEY_LEFT:
+				m_InQueue.push(HeadDir::left); break;
+			case GLFW_KEY_UP:
+				m_InQueue.push(HeadDir::up); break;
+			case GLFW_KEY_DOWN:
+				m_InQueue.push(HeadDir::down); break;
+			default:
+				break;
+			}
+			MutexLock::Unlock("InputQueue");
+		}
+	}
+	GameScene* GameScene::GetInstance()
+	{
+		if (s_Instance == nullptr)
+			s_Instance = new GameScene(0.2f);
+		return s_Instance;
 	}
 }
