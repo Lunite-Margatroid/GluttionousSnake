@@ -38,6 +38,12 @@ namespace GS
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
+
+        io.FontGlobalScale = 2.f;
+
+        // For correct scaling, prefer to reload font + rebuild ImFontAtlas + call style.ScaleAllSizes().
+
+
         ImGui::StyleColorsDark();
 
         ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
@@ -51,9 +57,13 @@ namespace GS
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
 
+        style.ScaleAllSizes(2.0f);
+
         glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 
         glfwSetKeyCallback(m_Window, ApplicationKeyCallback);
+
+        
     }
 
     void Application::Run()
@@ -99,9 +109,13 @@ namespace GS
         ImGui::NewFrame();
 
         ImGui::Begin("Console");
+
+        //ImGui::SetWindowFontScale(3.f);
+
         if (m_GameScene->GetInterruptFlag() && !m_GameScene->IsGameOver())    // ÔÝÍ£×´Ì¬
         {
-            ImGui::Text("Status: Pause");
+            
+            ImGui::Text("Status: Pause", ImVec2(40 ,40));
             if (ImGui::Button("Restart"))
             {
                 m_GameScene->Continue();
